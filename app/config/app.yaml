@@ -1,6 +1,9 @@
 db:
   user: "postgres"
-  host: "db"
+  host: "localhost"
   port: "5432"
-  name: "home-service"
-  password: "password"
+  name: "homelisting"
+  password: "postgres"
+
+jwt:
+  secret_key: "keuDS3qePkeOYFpwT8YItmA6Tg1/9h76pdoNdagFwug="
