@@ -13,7 +13,7 @@ func InitRoutes(router *mux.Router, tokenManager auth.TokenManager, userRepo Use
 		return fmt.Errorf("failed to register route: %w", err)
 	}
 
-	//fmt.Printf("Registered routes:\n%s\n", router.Methods("POST").PathPrefix("/"))
+	fmt.Printf("Registered routes:\n%s\n", router.Methods("POST").PathPrefix("/"))
 
 	return nil
 }
