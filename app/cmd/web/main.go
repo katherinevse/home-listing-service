@@ -37,7 +37,7 @@ func main() {
 	//}
 
 	h := handler.New(tokenManager, userRepo)
-	router.HandleFunc("/api/register", h.Register).Methods("POST")
+	router.HandleFunc("/register", h.Register).Methods("POST")
 
 	port := ":8080"
 	fmt.Println("Server is running on", port)

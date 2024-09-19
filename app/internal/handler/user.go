@@ -22,7 +22,7 @@ func New(tokenManager auth.TokenManager, userRepo UserRepository) *Handler {
 	return &Handler{JWTSecretKey: os.Getenv("JWT_SECRET_KEY"), tokenManager: tokenManager, userRepo: userRepo}
 }
 
-// Register /api/register
+// Register /register
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
