@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Handler struct {
@@ -64,4 +65,64 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error writing response: %v", err)
 		return
 	}
+}
+
+// Login /login
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var user model.User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("Error closing request body: %v", err)
+		}
+	}(r.Body)
+
+	//TODO будет ли пользователь добавлять сам поле модератор он или нет или мы по токену смотрим
+	if user.Email == "" || user.Password == "" || user.UserType == "" {
+		http.Error(w, "Invalid user data", http.StatusBadRequest)
+		return
+	}
+
+	dbUser, err := h.userRepo.GetUserByEmail(user.Email)
+	if err != nil {
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(dbUser.Password), []byte(user.Password)); err != nil {
+		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
+		return
+	}
+
+	tokenString, err := h.tokenManager.GenerateJWT(dbUser.ID, h.JWTSecretKey)
+	if err != nil {
+		http.Error(w, "Failed to generate JWT token", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt_token",
+		Value:    tokenString,
+		Expires:  time.Now().Add(24 * time.Hour),
+		Path:     "/",
+		SameSite: http.SameSiteStrictMode,
+		HttpOnly: true,
+		Secure:   true,
+	})
+
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write([]byte("Login successful"))
+	if err != nil {
+		log.Printf("Error writing response: %v", err)
+		return
+	}
+
 }

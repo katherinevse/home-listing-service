@@ -6,4 +6,5 @@ import (
 
 type UserRepository interface {
 	CreateUser(user *model.User, hashedPassword []byte) error
+	GetUserByEmail(email string) (*model.User, error)
 }

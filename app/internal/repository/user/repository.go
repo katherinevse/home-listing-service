@@ -21,3 +21,13 @@ func (r *Repo) CreateUser(user *model.User, hashedPassword []byte) error {
 	}
 	return nil
 }
+
+func (r *Repo) GetUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	query := `SELECT id, email, password, usertype FROM users WHERE email=$1`
+	err := r.db.QueryRow(context.Background(), query, email).Scan(&user.ID, &user.Email, &user.Password, &user.UserType)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
