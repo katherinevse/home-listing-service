@@ -126,4 +126,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	tokenmy := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMSwidXNlcl90eXBlIjoibW9kZXJhdG9yIiwiZXhwIjoxNzI2OTEwMjU4fQ.ADGfs4jwi09442PXeOVvva2Osj7viZH-7qMPzS4YPxE"
+	tokenUserType, err := h.tokenManager.ParseJWT(tokenmy, h.JWTSecretKey)
+	fmt.Println(tokenUserType)
+
 }
