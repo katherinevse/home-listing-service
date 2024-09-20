@@ -87,7 +87,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}(r.Body)
 
 	//TODO будет ли пользователь добавлять сам поле модератор он или нет или мы по токену смотрим
-	if user.Email == "" || user.Password == "" || user.UserType == "" {
+	if user.Email == "" || user.Password == "" {
 		http.Error(w, "Invalid user data", http.StatusBadRequest)
 		return
 	}
@@ -103,7 +103,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenString, err := h.tokenManager.GenerateJWT(dbUser.ID, h.JWTSecretKey)
+	tokenString, err := h.tokenManager.GenerateJWT(dbUser.ID, dbUser.UserType, h.JWTSecretKey)
 	if err != nil {
 		http.Error(w, "Failed to generate JWT token", http.StatusInternalServerError)
 		return

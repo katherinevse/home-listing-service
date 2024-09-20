@@ -12,23 +12,22 @@ type TokenService struct {
 }
 
 type Claims struct {
-	UserID int `json:"user_id"`
+	UserID   int    `json:"user_id"`
+	UserType string `json:"user_type"`
 	jwt.RegisteredClaims
 }
 
-func (t *TokenService) GenerateJWT(userID int, secretKey string) (string, error) {
+func (t *TokenService) GenerateJWT(userID int, userType string, secretKey string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
-		UserID: userID,
+		UserID:   userID,
+		UserType: userType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
 	}
 
-	// Создаем новый JWT токен с указанными claims и методом подписи HS256
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	// Подписываем токен с использованием секретного ключа и возвращаем подписанную строку токена
 	signedToken, err := token.SignedString([]byte(secretKey))
 	if err != nil {
 		return "", fmt.Errorf("failed to sign JWT token: %v", err)
