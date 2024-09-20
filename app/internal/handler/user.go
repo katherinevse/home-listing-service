@@ -1,7 +1,8 @@
 package handler
 
 import (
-	"app/internal/model"
+	"app/internal/dto"
+	"app/internal/repository/model"
 	"app/pkg/auth"
 	"encoding/json"
 	"fmt"
@@ -30,7 +31,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user model.User
+	var user dto.Register
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
@@ -53,7 +54,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.userRepo.CreateUser(&user, hashedPassword)
+	err = h.userRepo.CreateUser((*model.User)(&user), hashedPassword)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error saving user to database: %s", err), http.StatusInternalServerError)
 		return
@@ -73,7 +74,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	var user model.User
+	var user dto.Login
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return

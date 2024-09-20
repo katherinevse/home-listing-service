@@ -1,7 +1,7 @@
 package user
 
 import (
-	"app/internal/model"
+	"app/internal/repository/model"
 	"context"
 )
 

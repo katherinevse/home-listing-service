@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"app/internal/model"
+	"app/internal/repository/model"
 )
 
 type UserRepository interface {
