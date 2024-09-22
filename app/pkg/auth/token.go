@@ -14,6 +14,7 @@ type TokenService struct {
 type Claims struct {
 	UserID   int    `json:"user_id"`
 	UserType string `json:"user_type"`
+	Email    string `json:"email"` //TODO DEL ME отладка
 	jwt.RegisteredClaims
 }
 

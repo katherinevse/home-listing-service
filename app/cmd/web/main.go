@@ -30,6 +30,7 @@ func main() {
 	userRepo := user.NewRepo(db)
 
 	router := mux.NewRouter()
+	//h := handler.New(tokenManager, userRepo)
 
 	//err = h.InitRoutes(router, tokenManager, userRepo)
 	//if err != nil {
@@ -39,6 +40,7 @@ func main() {
 	h := handler.New(tokenManager, userRepo)
 	router.HandleFunc("/register", h.Register).Methods("POST")
 	router.HandleFunc("/login", h.Login).Methods("POST")
+	router.HandleFunc("/house/create", h.CreateHouse).Methods("POST")
 
 	port := ":8080"
 	fmt.Println("Server is running on", port)

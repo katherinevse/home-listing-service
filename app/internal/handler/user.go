@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// TODO убрать хендлер в общую папку
 type Handler struct {
 	JWTSecretKey string
 	userRepo     UserRepository
@@ -86,7 +87,6 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 	}(r.Body)
 
-	//TODO будет ли пользователь добавлять сам поле модератор он или нет или мы по токену смотрим
 	if user.Email == "" || user.Password == "" {
 		http.Error(w, "Invalid user data", http.StatusBadRequest)
 		return
@@ -125,9 +125,5 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error writing response: %v", err)
 		return
 	}
-
-	tokenmy := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMSwidXNlcl90eXBlIjoibW9kZXJhdG9yIiwiZXhwIjoxNzI2OTEwMjU4fQ.ADGfs4jwi09442PXeOVvva2Osj7viZH-7qMPzS4YPxE"
-	tokenUserType, err := h.tokenManager.ParseJWT(tokenmy, h.JWTSecretKey)
-	fmt.Println(tokenUserType)
 
 }
