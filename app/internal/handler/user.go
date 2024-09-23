@@ -3,27 +3,14 @@ package handler
 import (
 	"app/internal/dto"
 	"app/internal/repository/model"
-	"app/pkg/auth"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"time"
 )
-
-// TODO убрать хендлер в общую папку
-type Handler struct {
-	JWTSecretKey string
-	userRepo     UserRepository
-	tokenManager auth.TokenManager
-}
-
-func New(tokenManager auth.TokenManager, userRepo UserRepository) *Handler {
-	return &Handler{JWTSecretKey: os.Getenv("JWT_SECRET_KEY"), tokenManager: tokenManager, userRepo: userRepo}
-}
 
 // Register /register
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {

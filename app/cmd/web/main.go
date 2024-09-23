@@ -3,6 +3,7 @@ package main
 import (
 	"app/internal/config"
 	"app/internal/handler"
+	"app/internal/repository/house"
 	"app/internal/repository/user"
 	"app/pkg"
 	"app/pkg/auth"
@@ -28,8 +29,11 @@ func main() {
 
 	tokenManager := &auth.TokenService{}
 	userRepo := user.NewRepo(db)
+	houseRepo := house.NewRepo(db)
 
 	router := mux.NewRouter()
+
+	//TODO read
 	//h := handler.New(tokenManager, userRepo)
 
 	//err = h.InitRoutes(router, tokenManager, userRepo)
@@ -37,7 +41,7 @@ func main() {
 	//	log.Fatalf("Failed to initialize routes: %v", err)
 	//}
 
-	h := handler.New(tokenManager, userRepo)
+	h := handler.New(tokenManager, userRepo, houseRepo)
 	router.HandleFunc("/register", h.Register).Methods("POST")
 	router.HandleFunc("/login", h.Login).Methods("POST")
 	router.HandleFunc("/house/create", h.CreateHouse).Methods("POST")
