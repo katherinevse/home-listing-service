@@ -5,22 +5,12 @@ import (
 	"app/internal/repository/model"
 	"encoding/json"
 	"net/http"
-	"strings"
 	"time"
 )
 
 func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	authHeader := r.Header.Get("Authorization")
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-
-	_, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
-	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		return
 	}
 
@@ -30,13 +20,23 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	const maxPrice = 100000000
+	const maxRooms = 10
+
+	// Если значения в пределах, ставим статус "одобрено" иначе на модерацию
+	var moderationStatus string
+	if flatRequest.Price > maxPrice || flatRequest.RoomsCount > maxRooms {
+		moderationStatus = "on moderation"
+	} else {
+		moderationStatus = "approved"
+	}
+
 	flat := model.Flat{
 		HouseID:          flatRequest.HouseID,
 		FlatNumber:       flatRequest.FlatNumber,
-		Floor:            flatRequest.Floor,
 		Price:            flatRequest.Price,
 		RoomsCount:       flatRequest.RoomsCount,
-		ModerationStatus: "created, waiting for moderation",
+		ModerationStatus: moderationStatus,
 		CreatedAt:        time.Now(),
 	}
 
@@ -45,16 +45,15 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	flatResponse := dto.FlatResponse{
+	response := dto.FlatResponse{
 		HouseID:          flat.HouseID,
 		FlatNumber:       flat.FlatNumber,
-		Floor:            flat.Floor,
 		Price:            flat.Price,
 		RoomsCount:       flat.RoomsCount,
 		ModerationStatus: flat.ModerationStatus,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(flatResponse)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
