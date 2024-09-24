@@ -7,11 +7,12 @@ import (
 
 type Handler struct {
 	JWTSecretKey string
-	userRepo     UserRepository
 	tokenManager auth.TokenManager
+	userRepo     UserRepository
 	houseRepo    HouseRepository
+	flatRepo     FlatRepository
 }
 
-func New(tokenManager auth.TokenManager, userRepo UserRepository, houseRepo HouseRepository) *Handler {
-	return &Handler{JWTSecretKey: os.Getenv("JWT_SECRET_KEY"), tokenManager: tokenManager, userRepo: userRepo, houseRepo: houseRepo}
+func New(tokenManager auth.TokenManager, userRepo UserRepository, houseRepo HouseRepository, flatRepo FlatRepository) *Handler {
+	return &Handler{JWTSecretKey: os.Getenv("JWT_SECRET_KEY"), tokenManager: tokenManager, userRepo: userRepo, houseRepo: houseRepo, flatRepo: flatRepo}
 }

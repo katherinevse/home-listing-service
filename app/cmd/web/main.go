@@ -3,6 +3,7 @@ package main
 import (
 	"app/internal/config"
 	"app/internal/handler"
+	"app/internal/repository/flat"
 	"app/internal/repository/house"
 	"app/internal/repository/user"
 	"app/pkg"
@@ -30,6 +31,7 @@ func main() {
 	tokenManager := &auth.TokenService{}
 	userRepo := user.NewRepo(db)
 	houseRepo := house.NewRepo(db)
+	flatRepo := flat.NewRepo(db)
 
 	router := mux.NewRouter()
 
@@ -41,10 +43,11 @@ func main() {
 	//	log.Fatalf("Failed to initialize routes: %v", err)
 	//}
 
-	h := handler.New(tokenManager, userRepo, houseRepo)
+	h := handler.New(tokenManager, userRepo, houseRepo, flatRepo)
 	router.HandleFunc("/register", h.Register).Methods("POST")
 	router.HandleFunc("/login", h.Login).Methods("POST")
 	router.HandleFunc("/house/create", h.CreateHouse).Methods("POST")
+	router.HandleFunc("/flat/create", h.CreateFlat).Methods("POST")
 
 	port := ":8080"
 	fmt.Println("Server is running on", port)

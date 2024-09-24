@@ -14,3 +14,7 @@ type UserRepository interface {
 type HouseRepository interface {
 	CreateHouse(house *model.House) error
 }
+
+type FlatRepository interface {
+	CreateFlat(flat *model.Flat) error
+}
