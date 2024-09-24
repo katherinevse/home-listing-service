@@ -2,6 +2,7 @@ package config
 
 type Config struct {
 	PostgresCfg PostgresConfig `yaml:"db"`
+	//JWTConfig   JWTConfig      `yaml:"jwt"`
 }
 
 type PostgresConfig struct {
@@ -12,8 +13,13 @@ type PostgresConfig struct {
 	Port     string `yaml:"port"`
 }
 
+//type JWTConfig struct {
+//	SecretKey string `yaml:"secret_key"`
+//}
+
 func NewConfig() *Config {
 	return &Config{
 		PostgresCfg: PostgresConfig{},
+		//JWTConfig:   JWTConfig{},
 	}
 }
