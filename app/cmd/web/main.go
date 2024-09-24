@@ -35,14 +35,6 @@ func main() {
 
 	router := mux.NewRouter()
 
-	//TODO read
-	//h := handler.New(tokenManager, userRepo)
-
-	//err = h.InitRoutes(router, tokenManager, userRepo)
-	//if err != nil {
-	//	log.Fatalf("Failed to initialize routes: %v", err)
-	//}
-
 	h := handler.New(tokenManager, userRepo, houseRepo, flatRepo)
 	router.HandleFunc("/register", h.Register).Methods("POST")
 	router.HandleFunc("/login", h.Login).Methods("POST")

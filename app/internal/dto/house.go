@@ -2,7 +2,6 @@ package dto
 
 import "time"
 
-// CreateHouse - структура для создания дома
 type House struct {
 	ID                 int       `json:"id"`
 	City               string    `json:"city" validate:"required"`         // Город
@@ -14,7 +13,6 @@ type House struct {
 	UpdatedAt          time.Time `json:"updated_at"`
 }
 
-// HouseResponse - структура для ответа с данными дома
 type HouseResponse struct {
 	ID                 int     `json:"id"`                   // Уникальный идентификатор дома
 	City               string  `json:"city"`                 // Город
