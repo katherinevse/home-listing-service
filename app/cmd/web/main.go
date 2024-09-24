@@ -48,6 +48,8 @@ func main() {
 	router.HandleFunc("/login", h.Login).Methods("POST")
 	router.HandleFunc("/house/create", h.CreateHouse).Methods("POST")
 	router.HandleFunc("/flat/create", h.CreateFlat).Methods("POST")
+	router.HandleFunc("/flat/update", h.GetModerationFlats).Methods("GET")
+	router.HandleFunc("/house/{id}", h.GetFlatsByHouseID).Methods("GET")
 
 	port := ":8080"
 	fmt.Println("Server is running on", port)

@@ -9,12 +9,13 @@ type UserRepository interface {
 	GetUserByEmail(email string) (*model.User, error)
 }
 
-//TODO
-
 type HouseRepository interface {
 	CreateHouse(house *model.House) error
+	GetAllFlatsByHouseID(houseID string) ([]model.Flat, error)
+	GetApprovedFlatsByHouseID(houseID string) ([]model.Flat, error)
 }
 
 type FlatRepository interface {
 	CreateFlat(flat *model.Flat) error
+	GetFlatsOnModeration() ([]model.Flat, error)
 }

@@ -5,6 +5,7 @@ import (
 	"app/internal/repository/model"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strings"
 	"time"
@@ -77,4 +78,51 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response)
 
+}
+
+func (h *Handler) GetFlatsByHouseID(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	//способ получить параметры из URL запроса
+	vars := mux.Vars(r)
+	houseID := vars["id"]
+
+	authHeader := r.Header.Get("Authorization")
+	bearerPrefix := "Bearer "
+	if !strings.HasPrefix(authHeader, bearerPrefix) {
+		http.Error(w, "Missing or invalid Authorization header", http.StatusBadRequest)
+		return
+	}
+
+	// Парсинг токена
+	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
+	u, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
+	if err != nil {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		fmt.Printf("Token validation error: %v\n", err)
+		return
+	}
+
+	flats := make([]model.Flat, 0, 100)
+
+	if u.UserType == "client" {
+		flats, err = h.houseRepo.GetApprovedFlatsByHouseID(houseID)
+	} else if u.UserType == "moderator" {
+		flats, err = h.houseRepo.GetAllFlatsByHouseID(houseID)
+	} else {
+		http.Error(w, "Access denied", http.StatusForbidden)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Failed to get flats", http.StatusInternalServerError)
+		return
+	}
+
+	// Возвращаем результат
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(flats)
 }

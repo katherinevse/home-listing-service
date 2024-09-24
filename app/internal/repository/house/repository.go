@@ -30,3 +30,49 @@ func (r *Repo) CreateHouse(house *model.House) error {
 	}
 	return nil
 }
+
+func (r *Repo) GetAllFlatsByHouseID(houseID string) ([]model.Flat, error) {
+	flats := make([]model.Flat, 0, 100)
+	query := `SELECT id, house_id, flat_number, floor, price, rooms_count, moderation_status, created_at
+			  FROM flats
+			  WHERE house_id = $1`
+
+	rows, err := r.db.Query(context.Background(), query, houseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var flat model.Flat
+		if err := rows.Scan(&flat.ID, &flat.HouseID, &flat.FlatNumber, &flat.Floor, &flat.Price, &flat.RoomsCount, &flat.ModerationStatus, &flat.CreatedAt); err != nil {
+			return nil, err
+		}
+		flats = append(flats, flat)
+	}
+
+	return flats, nil
+}
+
+func (r *Repo) GetApprovedFlatsByHouseID(houseID string) ([]model.Flat, error) {
+	flats := make([]model.Flat, 0, 100)
+	query := `SELECT id, house_id, flat_number, floor, price, rooms_count, moderation_status, created_at
+			  FROM flats
+			  WHERE house_id = $1 AND moderation_status = 'approved'`
+
+	rows, err := r.db.Query(context.Background(), query, houseID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var flat model.Flat
+		if err := rows.Scan(&flat.ID, &flat.HouseID, &flat.FlatNumber, &flat.Floor, &flat.Price, &flat.RoomsCount, &flat.ModerationStatus, &flat.CreatedAt); err != nil {
+			return nil, err
+		}
+		flats = append(flats, flat)
+	}
+
+	return flats, nil
+}
