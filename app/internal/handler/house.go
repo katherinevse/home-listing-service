@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -13,10 +14,6 @@ import (
 
 // CreateHouse /house/create
 func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	authHeader := r.Header.Get("Authorization")
 	bearerPrefix := "Bearer "
 
@@ -33,15 +30,13 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		fmt.Printf("Token validation error: %v\n", err)
-
+		return
 	}
 	if u.UserType == "client" {
 		http.Error(w, "Access denied. Only moderators can perform this action.", http.StatusForbidden)
 		fmt.Println("Attempt to access moderator-only endpoint by non-moderator user -->", u.Email, u.UserID, u.UserType)
 		return
 	}
-
-	//http.Error(w, "Ok.", http.StatusOK)
 
 	var houseRequest dto.House
 	if err := json.NewDecoder(r.Body).Decode(&houseRequest); err != nil {
@@ -55,8 +50,9 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 		HouseNumber:        houseRequest.HouseNumber,
 		YearOfConstruction: houseRequest.YearOfConstruction,
 		Developer:          houseRequest.Developer,
-		CreatedAt:          time.Now(),
-		UpdatedAt:          time.Now(),
+		// TODO это можно прописать в БД и сделать default now()
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	if err := h.houseRepo.CreateHouse(&house); err != nil {
@@ -65,6 +61,7 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := dto.HouseResponse{
+		// TODO не по контракту
 		City:               houseRequest.City,
 		Street:             houseRequest.Street,
 		HouseNumber:        houseRequest.HouseNumber,
@@ -76,16 +73,16 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response)
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		log.Printf("Failed to encode response: %v", err)
+		return
+	}
 
 }
 
 func (h *Handler) GetFlatsByHouseID(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	//способ получить параметры из URL запроса
 	vars := mux.Vars(r)
 	houseID := vars["id"]
@@ -124,5 +121,10 @@ func (h *Handler) GetFlatsByHouseID(w http.ResponseWriter, r *http.Request) {
 
 	// Возвращаем результат
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(flats)
+	err = json.NewEncoder(w).Encode(flats)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		log.Printf("Failed to encode response: %v", err)
+		return
+	}
 }

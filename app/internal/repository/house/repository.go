@@ -31,8 +31,9 @@ func (r *Repo) CreateHouse(house *model.House) error {
 	return nil
 }
 
+// TODO лежит в house
 func (r *Repo) GetAllFlatsByHouseID(houseID string) ([]model.Flat, error) {
-	flats := make([]model.Flat, 0, 100)
+	flats := make([]model.Flat, 0)
 	query := `SELECT id, house_id, flat_number, floor, price, rooms_count, moderation_status, created_at
 			  FROM flats
 			  WHERE house_id = $1`
@@ -45,9 +46,20 @@ func (r *Repo) GetAllFlatsByHouseID(houseID string) ([]model.Flat, error) {
 
 	for rows.Next() {
 		var flat model.Flat
-		if err := rows.Scan(&flat.ID, &flat.HouseID, &flat.FlatNumber, &flat.Floor, &flat.Price, &flat.RoomsCount, &flat.ModerationStatus, &flat.CreatedAt); err != nil {
+		err = rows.Scan(
+			&flat.ID,
+			&flat.HouseID,
+			&flat.FlatNumber,
+			&flat.Floor,
+			&flat.Price,
+			&flat.RoomsCount,
+			&flat.ModerationStatus,
+			&flat.CreatedAt,
+		)
+		if err != nil {
 			return nil, err
 		}
+
 		flats = append(flats, flat)
 	}
 
@@ -68,7 +80,16 @@ func (r *Repo) GetApprovedFlatsByHouseID(houseID string) ([]model.Flat, error) {
 
 	for rows.Next() {
 		var flat model.Flat
-		if err := rows.Scan(&flat.ID, &flat.HouseID, &flat.FlatNumber, &flat.Floor, &flat.Price, &flat.RoomsCount, &flat.ModerationStatus, &flat.CreatedAt); err != nil {
+		err := rows.Scan(
+			&flat.ID,
+			&flat.HouseID,
+			&flat.FlatNumber,
+			&flat.Floor,
+			&flat.Price,
+			&flat.RoomsCount,
+			&flat.ModerationStatus,
+			&flat.CreatedAt)
+		if err != nil {
 			return nil, err
 		}
 		flats = append(flats, flat)

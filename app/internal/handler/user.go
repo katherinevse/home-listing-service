@@ -14,11 +14,6 @@ import (
 
 // Register /register
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var user dto.Register
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -42,7 +37,13 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.userRepo.CreateUser((*model.User)(&user), hashedPassword)
+	u := model.User{
+		Email:    user.Email,
+		Password: string(hashedPassword),
+		UserType: user.UserType,
+	}
+
+	err = h.userRepo.CreateUser(&u, hashedPassword)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Error saving user to database: %s", err), http.StatusInternalServerError)
 		return
@@ -58,10 +59,6 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 // Login /login
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	var user dto.Login
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -109,7 +106,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write([]byte("Login successful"))
 	if err != nil {
-		log.Printf("Error writing response: %v", err)
+		log.Printf("Error writing response: %v", http.StatusInternalServerError)
 		return
 	}
 

@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-type DBClient interface {
-	//Exec Query
-}
-
 func NewPsqlClient(ctx context.Context, cfg *config.Config) (pool *pgxpool.Pool, err error) {
 	queryConnection := fmt.Sprintf(
 		"postgresql://%s:%s@%s:%s/%s?%s",

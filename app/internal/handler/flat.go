@@ -5,22 +5,18 @@ import (
 	"app/internal/repository/model"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 )
 
 const (
-	maxPrice = 1000000 // Пороговая цена квартиры
-	maxRooms = 5       // Пороговое количество комнат
+	maxPrice = 1000000
+	maxRooms = 5
 )
 
 func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var flatRequest dto.Flat
 	if err := json.NewDecoder(r.Body).Decode(&flatRequest); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -63,10 +59,6 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	authHeader := r.Header.Get("Authorization")
 	bearerPrefix := "Bearer "
 
@@ -80,9 +72,11 @@ func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
 	u, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
 	if err != nil {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		// TODO logger
 		fmt.Printf("Token validation error: %v\n", err)
-
+		return
 	}
+
 	if u.UserType == "client" {
 		http.Error(w, "Access denied. Only moderators can perform this action.", http.StatusForbidden)
 		fmt.Println("Attempt to access moderator-only endpoint by non-moderator user -->", u.Email, u.UserID, u.UserType)
@@ -96,5 +90,11 @@ func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(flats)
+	err = json.NewEncoder(w).Encode(flats)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		log.Printf("Failed to encode response: %v", err)
+		return
+	}
+
 }
