@@ -3,6 +3,7 @@ package main
 import (
 	"app/internal/config"
 	"app/internal/handler"
+	"app/internal/kafka"
 	"app/internal/repository/flat"
 	"app/internal/repository/house"
 	"app/internal/repository/user"
@@ -15,6 +16,8 @@ import (
 	"log"
 	"net/http"
 )
+
+//TODO добавить логгер, исправить контексты, кафку, обработать ошибки
 
 var cfg *config.Config
 
@@ -33,9 +36,18 @@ func main() {
 	houseRepo := house.NewRepo(db)
 	flatRepo := flat.NewRepo(db)
 
+	//Kafka продюсер
+	p, err := kafka.NewProducer([]string{"localhost:9092"})
+	if err != nil {
+		log.Fatalf("Failed to create producer: %v", err)
+	}
+	defer p.Producer.Close()
+
+	//Kafka консьюмер
+
 	router := mux.NewRouter()
 
-	h := handler.New(tokenManager, userRepo, houseRepo, flatRepo)
+	h := handler.New(tokenManager, userRepo, houseRepo, flatRepo, p)
 	router.HandleFunc("/register", h.Register).Methods("POST")
 	router.HandleFunc("/login", h.Login).Methods("POST")
 	router.HandleFunc("/house/create", h.CreateHouse).Methods("POST")
