@@ -27,6 +27,15 @@ type FlatRepository interface {
 	GetFlatsOnModeration() ([]model.Flat, error)
 }
 
+type SubscriptionRepository interface {
+	CreateSubscription(subscriber *model.Subscription) error
+	GetSubscribersByHouseID(houseID int) ([]model.User, error)
+}
+
 type ProducerManager interface {
 	PublishNotification(houseID int, flatNumber int, message string) error
+}
+
+type ConsumerManager interface {
+	Listen(topic string)
 }

@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+//TODO починить айдишники все время 0 в ответе только /house/create, и проверку добавить на одинаковые дома и квартиры в бд
+
 // CreateHouse /house/create
 func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
@@ -62,6 +64,7 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 
 	response := dto.HouseResponse{
 		// TODO не по контракту
+		ID:                 houseRequest.ID,
 		City:               houseRequest.City,
 		Street:             houseRequest.Street,
 		HouseNumber:        houseRequest.HouseNumber,

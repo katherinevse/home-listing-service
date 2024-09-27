@@ -62,7 +62,12 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	err := json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		log.Printf("Failed to encode response: %v", err)
+		return
+	}
 }
 
 func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
