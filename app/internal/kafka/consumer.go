@@ -64,4 +64,12 @@ func (c *Consumer) handleMessage(msg *sarama.ConsumerMessage) {
 
 	log.Printf("Found %d subscribers for house ID: %d", len(subscribers), notification.HouseID)
 
+	//Обработка уведомлений для подписчиков (раскомментируйте и добавьте Notifier)
+	for _, user := range subscribers {
+		log.Printf("Sending notification to user ID: %d", user.ID)
+		err := c.Notifier.SendNotification(user, notification)
+		if err != nil {
+			log.Printf("Failed to send notification to user %d: %v", user.ID, err)
+		}
+	}
 }

@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Тестовое задание для отбора на Backend Bootcamp
+  title: Сервис продажи домов
   version: 1.0.0
 paths:
   /dummyLogin:
@@ -34,7 +34,7 @@ paths:
         Процесс аутентификации путем передачи идентификатор+пароля
         пользователя и получения токена для дальнейшего прохождения авторизации
       tags:
-        - noAuth 
+        - noAuth
       requestBody:
         content:
           application/json:
@@ -67,7 +67,7 @@ paths:
         Дополнительное задание.
         Регистрация нового пользователя
       tags:
-        - noAuth 
+        - noAuth
       requestBody:
         content:
           application/json:
@@ -327,7 +327,7 @@ components:
     Developer:
       type: string
       nullable: true
-      description: Застройщик 
+      description: Застройщик
       example: Мэрия города
     House:
       type: object
@@ -398,7 +398,7 @@ components:
       type: string
       format: email
       description: Email пользователя
-      example: test@gmail.com    
+      example: test@gmail.com
     Password:
       type: string
       description: Пароль пользователя
