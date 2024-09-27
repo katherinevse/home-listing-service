@@ -8,6 +8,7 @@ import (
 	"app/internal/repository/house"
 	"app/internal/repository/subscriptions"
 	"app/internal/repository/user"
+	notifier2 "app/notifier"
 	"app/pkg"
 	"app/pkg/auth"
 	"app/pkg/utils"
@@ -37,6 +38,7 @@ func main() {
 	houseRepo := house.NewRepo(db)
 	flatRepo := flat.NewRepo(db)
 	subcriptionRepo := subscriptions.NewRepo(db)
+	notifier := notifier2.New()
 
 	brokers := []string{"localhost:9092"}
 
@@ -48,7 +50,7 @@ func main() {
 	defer p.Producer.Close()
 
 	//Kafka консьюмер
-	c, err := kafka.NewConsumer(brokers, subcriptionRepo)
+	c, err := kafka.NewConsumer(brokers, subcriptionRepo, notifier)
 	if err != nil {
 		log.Fatalf("Failed to create consumer: %v", err)
 	}
