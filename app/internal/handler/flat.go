@@ -45,12 +45,12 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO горутинку добавить стоит
-	message := "New flat created!"
-	if err := h.producer.PublishNotification(flat.HouseID, flat.FlatNumber, message); err != nil {
-		log.Printf("Failed to send Kafka notification for houseID %s, flatNumber %s: %v", flat.HouseID, flat.FlatNumber, err)
-		// TODO продолжать ли , даже если отправка уведомления не удалась
-	}
+	go func() {
+		message := "New flat created!"
+		if err := h.producer.PublishNotification(flat.HouseID, flat.FlatNumber, message); err != nil {
+			log.Printf("Failed to send Kafka notification for houseID %s, flatNumber %s: %v", flat.HouseID, flat.FlatNumber, err)
+		}
+	}()
 
 	response := dto.FlatResponse{
 		HouseID:          flat.HouseID,

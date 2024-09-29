@@ -47,6 +47,7 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	house := model.House{
+		ID:                 houseRequest.ID,
 		City:               houseRequest.City,
 		Street:             houseRequest.Street,
 		HouseNumber:        houseRequest.HouseNumber,
