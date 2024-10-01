@@ -40,7 +40,7 @@ func (n *Notifier) sendMessage(email, subject, message string) error {
 	from := "katedasha.twins@bk.ru"
 	password := os.Getenv("SMTP_PASSWORD")
 
-	if from == "" || password == "" {
+	if password == "" {
 		return fmt.Errorf("SMTP credentials are not set")
 	}
 

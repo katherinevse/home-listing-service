@@ -30,7 +30,7 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 	} else {
 		moderationStatus = "approved"
 	}
-
+	
 	flat := model.Flat{
 		HouseID:          flatRequest.HouseID,
 		FlatNumber:       flatRequest.FlatNumber,
