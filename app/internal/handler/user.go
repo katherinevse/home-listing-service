@@ -87,7 +87,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenString, err := h.tokenManager.GenerateJWT(dbUser.ID, dbUser.UserType, h.JWTSecretKey)
+	tokenString, err := h.tokenManager.GenerateJWT(dbUser.ID, dbUser.UserType)
 	if err != nil {
 		http.Error(w, "Failed to generate JWT token", http.StatusInternalServerError)
 		return

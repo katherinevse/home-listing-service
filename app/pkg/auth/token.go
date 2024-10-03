@@ -9,6 +9,13 @@ import (
 )
 
 type TokenService struct {
+	JWTSecretKey string
+}
+
+func NewTokenService(secretKey string) *TokenService {
+	return &TokenService{
+		JWTSecretKey: secretKey,
+	}
 }
 
 type Claims struct {
@@ -18,7 +25,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func (t *TokenService) GenerateJWT(userID int, userType string, secretKey string) (string, error) {
+func (t *TokenService) GenerateJWT(userID int, userType string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
 		UserID:   userID,
@@ -29,18 +36,18 @@ func (t *TokenService) GenerateJWT(userID int, userType string, secretKey string
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	signedToken, err := token.SignedString([]byte(secretKey))
+	signedToken, err := token.SignedString([]byte(t.JWTSecretKey))
 	if err != nil {
 		return "", fmt.Errorf("failed to sign JWT token: %v", err)
 	}
 	return signedToken, nil
 }
 
-func (t *TokenService) ParseJWT(tokenStr string, secretKey string) (*Claims, error) {
+func (t *TokenService) ParseJWT(tokenStr string) (*Claims, error) {
 	claims := &Claims{}
 	// ParseWithClaims разбирает токен и заполняет структуру claims.
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secretKey), nil
+		return []byte(t.JWTSecretKey), nil
 	})
 
 	if err != nil {

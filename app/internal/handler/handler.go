@@ -1,11 +1,6 @@
 package handler
 
-import (
-	"os"
-)
-
 type Handler struct {
-	JWTSecretKey     string
 	tokenManager     TokenManager
 	userRepo         UserRepository
 	houseRepo        HouseRepository
@@ -25,7 +20,6 @@ func New(
 	consumer ConsumerManager,
 ) *Handler {
 	return &Handler{
-		JWTSecretKey:     os.Getenv("JWT_SECRET_KEY"),
 		tokenManager:     tokenManager,
 		userRepo:         userRepo,
 		houseRepo:        houseRepo,

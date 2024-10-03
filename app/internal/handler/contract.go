@@ -7,8 +7,8 @@ import (
 
 //go:generate mockgen -source=contract.go -destination=mocks/mockTokenManager.go
 type TokenManager interface {
-	GenerateJWT(userID int, userType string, secretKey string) (string, error)
-	ParseJWT(tokenStr string, secretKey string) (*auth.Claims, error)
+	GenerateJWT(userID int, userType string) (string, error)
+	ParseJWT(tokenStr string) (*auth.Claims, error)
 }
 
 type UserRepository interface {

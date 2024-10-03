@@ -4,3 +4,12 @@ db:
   port: "5432"
   name: "homelisting"
   password: "postgres"
+
+app:
+  host: "localhost"
+  domain: "localhost"
+  port: "8080"
+  scheme: "http"
+
+jwt:
+  secret_key: "keuDS3qePkeOYFpwT8YItmA6Tg1/9h76pdoNdagFwug"

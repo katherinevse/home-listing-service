@@ -17,6 +17,8 @@ const (
 )
 
 func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
+	//ctx := r.Context()
+
 	var flatRequest dto.Flat
 	if err := json.NewDecoder(r.Body).Decode(&flatRequest); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -30,7 +32,7 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 	} else {
 		moderationStatus = "approved"
 	}
-	
+
 	flat := model.Flat{
 		HouseID:          flatRequest.HouseID,
 		FlatNumber:       flatRequest.FlatNumber,
@@ -68,6 +70,7 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to encode response: %v", err)
 		return
 	}
+	return
 }
 
 func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
@@ -81,7 +84,7 @@ func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
 
 	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
 
-	u, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
+	u, err := h.tokenManager.ParseJWT(tokenString)
 	if err != nil {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		// TODO logger

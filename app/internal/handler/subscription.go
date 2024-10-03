@@ -24,7 +24,7 @@ func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 
 	// Парсинг токена
 	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
-	u, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
+	u, err := h.tokenManager.ParseJWT(tokenString)
 	if err != nil {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		fmt.Printf("Token validation error: %v\n", err)

@@ -16,29 +16,29 @@ import (
 
 // CreateHouse /house/create
 func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
-	authHeader := r.Header.Get("Authorization")
-	bearerPrefix := "Bearer "
-
-	// Проверяем наличие заголовка и его корректность
-	if !strings.HasPrefix(authHeader, bearerPrefix) {
-		http.Error(w, "Missing or invalid Authorization header", http.StatusBadRequest)
-		return
-	}
-
-	// Убираем "Bearer " из заголовка
-	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
-
-	u, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
-	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		fmt.Printf("Token validation error: %v\n", err)
-		return
-	}
-	if u.UserType == "client" {
-		http.Error(w, "Access denied. Only moderators can perform this action.", http.StatusForbidden)
-		fmt.Println("Attempt to access moderator-only endpoint by non-moderator user -->", u.Email, u.UserID, u.UserType)
-		return
-	}
+	//authHeader := r.Header.Get("Authorization")
+	//bearerPrefix := "Bearer "
+	//
+	//// Проверяем наличие заголовка и его корректность
+	//if !strings.HasPrefix(authHeader, bearerPrefix) {
+	//	http.Error(w, "Missing or invalid Authorization header", http.StatusBadRequest)
+	//	return
+	//}
+	//
+	//// Убираем "Bearer " из заголовка
+	//tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
+	//
+	//u, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
+	//if err != nil {
+	//	http.Error(w, "Invalid token", http.StatusUnauthorized)
+	//	fmt.Printf("Token validation error: %v\n", err)
+	//	return
+	//}
+	//if u.UserType == "client" {
+	//	http.Error(w, "Access denied. Only moderators can perform this action.", http.StatusForbidden)
+	//	fmt.Println("Attempt to access moderator-only endpoint by non-moderator user -->", u.Email, u.UserID, u.UserType)
+	//	return
+	//}
 
 	var houseRequest dto.House
 	if err := json.NewDecoder(r.Body).Decode(&houseRequest); err != nil {
@@ -77,7 +77,7 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(response)
+	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 		log.Printf("Failed to encode response: %v", err)
@@ -100,7 +100,7 @@ func (h *Handler) GetFlatsByHouseID(w http.ResponseWriter, r *http.Request) {
 
 	// Парсинг токена
 	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
-	u, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
+	u, err := h.tokenManager.ParseJWT(tokenString)
 	if err != nil {
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
 		fmt.Printf("Token validation error: %v\n", err)

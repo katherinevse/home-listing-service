@@ -11,10 +11,6 @@ import (
 
 type Notifier struct{}
 
-func New() *Notifier {
-	return &Notifier{}
-}
-
 // SendNotification sends a notification to the user's email about a new apartment listing
 func (n *Notifier) SendNotification(user model.User, notification kafka.NotificationMessage) error {
 	message := fmt.Sprintf(
