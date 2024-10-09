@@ -4,10 +4,8 @@ import (
 	"app/internal/dto"
 	"app/internal/repository/model"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -17,7 +15,6 @@ const (
 )
 
 func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
-	//ctx := r.Context()
 
 	var flatRequest dto.Flat
 	if err := json.NewDecoder(r.Body).Decode(&flatRequest); err != nil {
@@ -74,30 +71,6 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
-	authHeader := r.Header.Get("Authorization")
-	bearerPrefix := "Bearer "
-
-	if !strings.HasPrefix(authHeader, bearerPrefix) {
-		http.Error(w, "Missing or invalid Authorization header", http.StatusBadRequest)
-		return
-	}
-
-	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
-
-	u, err := h.tokenManager.ParseJWT(tokenString)
-	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		// TODO logger
-		fmt.Printf("Token validation error: %v\n", err)
-		return
-	}
-
-	if u.UserType == "client" {
-		http.Error(w, "Access denied. Only moderators can perform this action.", http.StatusForbidden)
-		fmt.Println("Attempt to access moderator-only endpoint by non-moderator user -->", u.Email, u.UserID, u.UserType)
-		return
-	}
-
 	flats, err := h.flatRepo.GetFlatsOnModeration()
 	if err != nil {
 		http.Error(w, "Failed to get flats", http.StatusInternalServerError)

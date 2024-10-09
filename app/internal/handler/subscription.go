@@ -3,36 +3,23 @@ package handler
 import (
 	"app/internal/repository/model"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strings"
 )
 
 // CreateSubscription  /house/{id}/subscribe
 func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	houseID := vars["id"]
-
-	authHeader := r.Header.Get("Authorization")
-	bearerPrefix := "Bearer "
-	if !strings.HasPrefix(authHeader, bearerPrefix) {
-		http.Error(w, "Missing or invalid Authorization header", http.StatusBadRequest)
-		return
-	}
-
-	// Парсинг токена
-	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
-	u, err := h.tokenManager.ParseJWT(tokenString)
-	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		fmt.Printf("Token validation error: %v\n", err)
+	u, ok := r.Context().Value("user").(*model.User)
+	if !ok {
+		http.Error(w, "Failed to retrieve user from context", http.StatusInternalServerError)
 		return
 	}
 
 	subscription := model.Subscription{
-		UserID:  u.UserID,
+		UserID:  u.ID,
 		HouseID: houseID,
 	}
 

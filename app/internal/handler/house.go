@@ -3,12 +3,11 @@ package handler
 import (
 	"app/internal/dto"
 	"app/internal/repository/model"
+	"app/pkg/auth"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -16,30 +15,6 @@ import (
 
 // CreateHouse /house/create
 func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
-	//authHeader := r.Header.Get("Authorization")
-	//bearerPrefix := "Bearer "
-	//
-	//// Проверяем наличие заголовка и его корректность
-	//if !strings.HasPrefix(authHeader, bearerPrefix) {
-	//	http.Error(w, "Missing or invalid Authorization header", http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//// Убираем "Bearer " из заголовка
-	//tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
-	//
-	//u, err := h.tokenManager.ParseJWT(tokenString, h.JWTSecretKey)
-	//if err != nil {
-	//	http.Error(w, "Invalid token", http.StatusUnauthorized)
-	//	fmt.Printf("Token validation error: %v\n", err)
-	//	return
-	//}
-	//if u.UserType == "client" {
-	//	http.Error(w, "Access denied. Only moderators can perform this action.", http.StatusForbidden)
-	//	fmt.Println("Attempt to access moderator-only endpoint by non-moderator user -->", u.Email, u.UserID, u.UserType)
-	//	return
-	//}
-
 	var houseRequest dto.House
 	if err := json.NewDecoder(r.Body).Decode(&houseRequest); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -87,28 +62,27 @@ func (h *Handler) CreateHouse(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetFlatsByHouseID(w http.ResponseWriter, r *http.Request) {
-	//способ получить параметры из URL запроса
+	// Получаем параметры из URL запроса
 	vars := mux.Vars(r)
 	houseID := vars["id"]
 
-	authHeader := r.Header.Get("Authorization")
-	bearerPrefix := "Bearer "
-	if !strings.HasPrefix(authHeader, bearerPrefix) {
-		http.Error(w, "Missing or invalid Authorization header", http.StatusBadRequest)
+	// Извлекаем пользователя из контекста
+	user := r.Context().Value("user")
+	if user == nil {
+		http.Error(w, "User not found in context", http.StatusUnauthorized)
 		return
 	}
 
-	// Парсинг токена
-	tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
-	u, err := h.tokenManager.ParseJWT(tokenString)
-	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		fmt.Printf("Token validation error: %v\n", err)
+	u, ok := user.(*auth.Claims)
+	if !ok {
+		http.Error(w, "Invalid user in context", http.StatusInternalServerError)
 		return
 	}
 
 	flats := make([]model.Flat, 0, 100)
+	var err error
 
+	// Проверяем тип пользователя и выбираем данные в зависимости от его роли
 	if u.UserType == "client" {
 		flats, err = h.houseRepo.GetApprovedFlatsByHouseID(houseID)
 	} else if u.UserType == "moderator" {
