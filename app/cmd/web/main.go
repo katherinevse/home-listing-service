@@ -43,6 +43,7 @@ func main() {
 	db, err := pkg.NewPsqlClient(context.Background(), cfg)
 	if err != nil {
 		logger.Error("Error creating db client", "error", err)
+		return
 	}
 
 	tokenManager := auth.NewTokenService(cfg.JWTConfig.SecretKey, logger)
@@ -52,8 +53,6 @@ func main() {
 	houseRepo := house.NewRepo(db)
 	flatRepo := flat.NewRepo(db)
 	subscriptionRepo := subscriptions.NewRepo(db)
-
-	//brokers := []string{"localhost:9092"}
 
 	p, err := kafka.NewProducer(cfg.KafkaConfig.Brokers, logger)
 	if err != nil {

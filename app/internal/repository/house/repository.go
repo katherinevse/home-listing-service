@@ -31,7 +31,6 @@ func (r *Repo) CreateHouse(house *model.House) error {
 	return nil
 }
 
-// TODO лежит в house
 func (r *Repo) GetAllFlatsByHouseID(houseID string) ([]model.Flat, error) {
 	flats := make([]model.Flat, 0)
 	query := `SELECT id, house_id, flat_number, floor, price, rooms_count, moderation_status, created_at
@@ -93,6 +92,10 @@ func (r *Repo) GetApprovedFlatsByHouseID(houseID string) ([]model.Flat, error) {
 			return nil, err
 		}
 		flats = append(flats, flat)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return flats, nil
