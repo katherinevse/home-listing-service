@@ -17,4 +17,3 @@ jwt:
 logger:
   level: "debug" # "info", "error"
 
-#logger: "prod"
