@@ -3,21 +3,23 @@ package kafka
 import (
 	"encoding/json"
 	"github.com/IBM/sarama"
+	"log/slog"
 )
 
 type Producer struct {
 	Producer sarama.SyncProducer
+	logger   *slog.Logger
 }
 
-func NewProducer(brokers []string) (*Producer, error) {
+func NewProducer(brokers []string, logger *slog.Logger) (*Producer, error) {
 	producer, err := sarama.NewSyncProducer(brokers, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &Producer{Producer: producer}, nil
+	return &Producer{Producer: producer, logger: logger}, nil
 }
 
-// PublishNotification - отправляет уведомление о новой квартире в топик
+// PublishNotification отправляет уведомление о новой квартире в топик
 func (p *Producer) PublishNotification(houseID int, flatNumber int, message string) error {
 	notification := NotificationMessage{
 		HouseID:    houseID,
@@ -26,6 +28,7 @@ func (p *Producer) PublishNotification(houseID int, flatNumber int, message stri
 	}
 	value, err := json.Marshal(notification)
 	if err != nil {
+		p.logger.Error("Failed to marshal notification", "error", err)
 		return err
 	}
 
@@ -34,6 +37,13 @@ func (p *Producer) PublishNotification(houseID int, flatNumber int, message stri
 		Value: sarama.StringEncoder(value),
 	}
 
-	_, _, err = p.Producer.SendMessage(msg)
-	return err
+	// Отправляем сообщение и обрабатываем ошибки
+	partition, offset, err := p.Producer.SendMessage(msg)
+	if err != nil {
+		p.logger.Error("Failed to send message to Kafka", "error", err)
+		return err
+	}
+
+	p.logger.Info("Message sent to Kafka", "topic", msg.Topic, "partition", partition, "offset", offset)
+	return nil
 }

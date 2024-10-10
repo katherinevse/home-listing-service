@@ -13,3 +13,8 @@ app:
 
 jwt:
   secret_key: "keuDS3qePkeOYFpwT8YItmA6Tg1/9h76pdoNdagFwug"
+
+logger:
+  level: "debug" # "info", "error"
+
+#logger: "prod"

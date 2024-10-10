@@ -4,17 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"log"
+	"log/slog"
 	"time"
 )
 
 type TokenService struct {
 	JWTSecretKey string
+	logger       *slog.Logger
 }
 
-func NewTokenService(secretKey string) *TokenService {
+func NewTokenService(secretKey string, logger *slog.Logger) *TokenService {
 	return &TokenService{
 		JWTSecretKey: secretKey,
+		logger:       logger,
 	}
 }
 
@@ -38,8 +40,10 @@ func (t *TokenService) GenerateJWT(userID int, userType string) (string, error) 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(t.JWTSecretKey))
 	if err != nil {
+		t.logger.Error("Failed to sign JWT token", "error", err)
 		return "", fmt.Errorf("failed to sign JWT token: %v", err)
 	}
+	t.logger.Info("JWT token generated successfully", "userID", userID)
 	return signedToken, nil
 }
 
@@ -51,14 +55,15 @@ func (t *TokenService) ParseJWT(tokenStr string) (*Claims, error) {
 	})
 
 	if err != nil {
-		log.Println("Error parsing JWT:", err)
+		t.logger.Error("Error parsing JWT", "error", err)
 		return nil, errors.New("invalid token")
 	}
 
 	if !token.Valid {
-		log.Println("Invalid JWT token")
+		t.logger.Error("Invalid JWT token")
 		return nil, errors.New("invalid token")
 	}
 
+	t.logger.Info("JWT token parsed successfully", "userID", claims.UserID)
 	return claims, nil
 }

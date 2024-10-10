@@ -4,32 +4,39 @@ import (
 	"app/internal/kafka"
 	"app/internal/repository/model"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/smtp"
 	"os"
 )
 
-type Notifier struct{}
+type Notifier struct {
+	logger *slog.Logger
+}
 
-// SendNotification sends a notification to the user's email about a new apartment listing
+// NewNotifier создаёт новый Notifier с указанным логгером.
+func NewNotifier(logger *slog.Logger) *Notifier {
+	return &Notifier{logger: logger}
+}
+
+// SendNotification отправляет уведомление на электронную почту пользователя о новой квартире.
 func (n *Notifier) SendNotification(user model.User, notification kafka.NotificationMessage) error {
 	message := fmt.Sprintf(
 		"Hello %s, a new apartment (Flat Number: %d) is available in house %d",
 		user.Email, notification.FlatNumber, notification.HouseID)
 
-	//theme
 	subject := "New Apartment Available!"
 
 	err := n.sendMessage(user.Email, subject, message)
 	if err != nil {
+		n.logger.Error("Failed to send notification", "user", user.Email, "error", err)
 		return fmt.Errorf("failed to send notification to %s: %v", user.Email, err)
 	}
 
-	log.Printf("Notification sent to %s: %s", user.Email, message)
+	n.logger.Info("Notification sent successfully", "user", user.Email, "message", message)
 	return nil
 }
 
-// sendMessage sends an email via SMTP to the provided email address
+// sendMessage отправляет электронное письмо по SMTP на указанный адрес электронной почты.
 func (n *Notifier) sendMessage(email, subject, message string) error {
 	smtpHost := "smtp.mail.ru"
 	smtpPort := "587"
@@ -49,10 +56,10 @@ func (n *Notifier) sendMessage(email, subject, message string) error {
 
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{email}, msg)
 	if err != nil {
-		log.Printf("Error sending email to %s: %v", email, err)
+		n.logger.Error("Error sending email", "to", email, "error", err)
 		return fmt.Errorf("error sending email: %v", err)
 	}
 
-	log.Printf("Email sent successfully to %s", email)
+	n.logger.Info("Email sent successfully", "to", email)
 	return nil
 }

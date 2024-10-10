@@ -4,7 +4,6 @@ import (
 	"app/internal/repository/model"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 )
 
@@ -14,6 +13,7 @@ func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 	houseID := vars["id"]
 	u, ok := r.Context().Value("user").(*model.User)
 	if !ok {
+		h.logger.Error("Failed to retrieve user from context", "houseID", houseID)
 		http.Error(w, "Failed to retrieve user from context", http.StatusInternalServerError)
 		return
 	}
@@ -24,8 +24,8 @@ func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.subscriptionRepo.CreateSubscription(&subscription); err != nil {
+		h.logger.Error("Failed to create subscription", "houseID", houseID, "userID", u.ID, "error", err)
 		http.Error(w, "Failed to create subscription", http.StatusInternalServerError)
-		log.Printf("Failed to create subscription: %v", err)
 		return
 	}
 
@@ -35,8 +35,10 @@ func (h *Handler) CreateSubscription(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
+		h.logger.Error("Failed to encode response", "houseID", houseID, "userID", u.ID, "error", err)
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		log.Printf("Failed to encode response: %v", err)
 		return
 	}
+	h.logger.Info("Successfully created subscription", "houseID", houseID, "userID", u.ID)
+
 }

@@ -1,5 +1,7 @@
 package handler
 
+import "log/slog"
+
 type Handler struct {
 	tokenManager     TokenManager
 	userRepo         UserRepository
@@ -8,6 +10,7 @@ type Handler struct {
 	subscriptionRepo SubscriptionRepository
 	producer         ProducerManager
 	consumer         ConsumerManager
+	logger           *slog.Logger
 }
 
 func New(
@@ -18,6 +21,7 @@ func New(
 	subscriptionRepo SubscriptionRepository,
 	producer ProducerManager,
 	consumer ConsumerManager,
+	logger *slog.Logger,
 ) *Handler {
 	return &Handler{
 		tokenManager:     tokenManager,
@@ -27,5 +31,6 @@ func New(
 		subscriptionRepo: subscriptionRepo,
 		producer:         producer,
 		consumer:         consumer,
+		logger:           logger,
 	}
 }

@@ -1,9 +1,10 @@
 package config
 
 type Config struct {
-	AppCfg      AppConfig      `yaml:"app"`
-	PostgresCfg PostgresConfig `yaml:"db"`
-	JWTConfig   JWTConfig      `yaml:"jwt"`
+	AppCfg       AppConfig      `yaml:"app"`
+	PostgresCfg  PostgresConfig `yaml:"db"`
+	JWTConfig    JWTConfig      `yaml:"jwt"`
+	LoggerConfig LoggerConfig   `yaml:"logger"`
 }
 
 type PostgresConfig struct {
@@ -25,10 +26,15 @@ type JWTConfig struct {
 	SecretKey string `yaml:"secret_key"`
 }
 
+type LoggerConfig struct {
+	Level string `yaml:"level"`
+}
+
 func NewConfig() *Config {
 	return &Config{
-		PostgresCfg: PostgresConfig{},
-		AppCfg:      AppConfig{},
-		JWTConfig:   JWTConfig{},
+		PostgresCfg:  PostgresConfig{},
+		AppCfg:       AppConfig{},
+		JWTConfig:    JWTConfig{},
+		LoggerConfig: LoggerConfig{},
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"app/internal/dto"
 	"app/internal/repository/model"
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 )
@@ -18,6 +17,7 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 
 	var flatRequest dto.Flat
 	if err := json.NewDecoder(r.Body).Decode(&flatRequest); err != nil {
+		h.logger.Error("Invalid request body", "error", err)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -40,6 +40,7 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.flatRepo.CreateFlat(&flat); err != nil {
+		h.logger.Error("Failed to create flat", "error", err)
 		http.Error(w, "Failed to create flat", http.StatusInternalServerError)
 		return
 	}
@@ -47,7 +48,7 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		message := "New flat created!"
 		if err := h.producer.PublishNotification(flat.HouseID, flat.FlatNumber, message); err != nil {
-			log.Printf("Failed to send Kafka notification for houseID %s, flatNumber %s: %v", flat.HouseID, flat.FlatNumber, err)
+			h.logger.Error("Failed to send Kafka notification", "houseID", flat.HouseID, "flatNumber", flat.FlatNumber, "error", err)
 		}
 	}()
 
@@ -63,8 +64,8 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
+		h.logger.Error("Failed to encode response", "error", err)
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		log.Printf("Failed to encode response: %v", err)
 		return
 	}
 	return
@@ -73,6 +74,7 @@ func (h *Handler) CreateFlat(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
 	flats, err := h.flatRepo.GetFlatsOnModeration()
 	if err != nil {
+		h.logger.Error("Failed to get flats on moderation", "error", err)
 		http.Error(w, "Failed to get flats", http.StatusInternalServerError)
 		return
 	}
@@ -80,9 +82,11 @@ func (h *Handler) GetModerationFlats(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(flats)
 	if err != nil {
+		h.logger.Error("Failed to encode response", "error", err)
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		log.Printf("Failed to encode response: %v", err)
 		return
 	}
+
+	h.logger.Info("Successfully returned flats on moderation")
 
 }

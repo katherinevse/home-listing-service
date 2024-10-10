@@ -3,32 +3,34 @@ package kafka
 import (
 	"encoding/json"
 	"github.com/IBM/sarama"
-	"log"
+	"log/slog"
 )
 
 type Consumer struct {
 	Consumer         sarama.Consumer
 	subscriptionRepo SubscriptionRepository
 	notifier         NotifierSender
+	logger           *slog.Logger
 }
 
-func NewConsumer(brokers []string, subscriptionRepo SubscriptionRepository, notifier NotifierSender) (*Consumer, error) {
+func NewConsumer(brokers []string, subscriptionRepo SubscriptionRepository, notifier NotifierSender, logger *slog.Logger) (*Consumer, error) {
 	consumer, err := sarama.NewConsumer(brokers, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &Consumer{Consumer: consumer, subscriptionRepo: subscriptionRepo, notifier: notifier}, nil
+	return &Consumer{Consumer: consumer, subscriptionRepo: subscriptionRepo, notifier: notifier, logger: logger}, nil
 }
 func (c *Consumer) Listen(topic string) {
-	log.Printf("Starting consumer for topic: %s", topic)
+	c.logger.Info("Starting consumer for topic", "topic", topic)
 
 	partitionConsumer, err := c.Consumer.ConsumePartition(topic, 0, sarama.OffsetNewest)
 	if err != nil {
-		log.Fatalf("Failed to start consumer: %v", err)
+		c.logger.Error("Failed to start consumer", "error", err) //TODO фатал
+		return
 	}
 	defer func() {
 		if err := partitionConsumer.Close(); err != nil {
-			log.Printf("Failed to close partition consumer: %v", err)
+			c.logger.Warn("Failed to close partition consumer", "error", err)
 		}
 	}()
 
@@ -38,37 +40,36 @@ func (c *Consumer) Listen(topic string) {
 }
 
 func (c *Consumer) handleMessage(msg *sarama.ConsumerMessage) {
-	log.Printf("Received raw message: %s", string(msg.Value))
+	c.logger.Debug("Received raw message", "message", string(msg.Value))
 
 	var notification NotificationMessage
 	err := json.Unmarshal(msg.Value, &notification)
 	if err != nil {
-		log.Printf("Failed to unmarshal message: %v", err)
+		c.logger.Warn("Failed to unmarshal message", "error", err)
 		return
 	}
 
-	log.Printf("Unmarshaled message: %+v", notification)
+	c.logger.Debug("Unmarshaled message", "notification", notification)
 
 	// Проверка подписок
-	log.Printf("Fetching subscribers for house ID: %d", notification.HouseID)
+	c.logger.Info("Fetching subscribers for house ID", "houseID", notification.HouseID)
 	subscribers, err := c.subscriptionRepo.GetSubscribersByHouseID(notification.HouseID)
 	if err != nil {
-		log.Printf("Failed to get subscribers for house %d: %v", notification.HouseID, err)
+		c.logger.Warn("Failed to get subscribers for house", "houseID", notification.HouseID, "error", err)
 		return
 	}
 
 	if len(subscribers) == 0 {
-		log.Printf("No subscribers found for house ID: %d", notification.HouseID)
+		c.logger.Info("No subscribers found for house ID", "houseID", notification.HouseID)
 		return
 	}
-
-	log.Printf("Found %d subscribers for house ID: %d", len(subscribers), notification.HouseID)
+	c.logger.Info("Found subscribers", "count", len(subscribers), "houseID", notification.HouseID)
 
 	for _, user := range subscribers {
-		log.Printf("Sending notification to user ID: %d", user.ID)
+		c.logger.Info("Sending notification to user", "userID", user.ID)
 		err := c.notifier.SendNotification(user, notification)
 		if err != nil {
-			log.Printf("Failed to send notification to user %d: %v", user.ID, err)
+			c.logger.Warn("Failed to send notification", "userID", user.ID, "error", err)
 		}
 	}
 }
