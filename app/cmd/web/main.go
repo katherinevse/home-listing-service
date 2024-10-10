@@ -17,25 +17,36 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
+)
+
+const (
+	envDev  = "dev"
+	envProd = "prod"
 )
 
 //TODO добавить логгер, middleware исправить контексты, кафку, обработать ошибки, исправить все по контракту
 
 var cfg *config.Config
+var logger *slog.Logger
 
 func init() {
 	cfg = utils.LoadConfig("./config/app.yaml")
+	logger = setupLogger(cfg.LoggerConfig.Level)
+
 }
 
 func main() {
+
 	db, err := pkg.NewPsqlClient(context.Background(), cfg)
 	if err != nil {
-		log.Fatalln("Error create db client:", err)
+		logger.Error("Error creating db client", "error", err)
 	}
 
-	tokenManager := auth.NewTokenService(cfg.JWTConfig.SecretKey)
-	emailNotifier := &notifier.Notifier{}
+	tokenManager := auth.NewTokenService(cfg.JWTConfig.SecretKey, logger)
+	emailNotifier := notifier.NewNotifier(logger)
 
 	userRepo := user.NewRepo(db)
 	houseRepo := house.NewRepo(db)
@@ -45,16 +56,16 @@ func main() {
 	brokers := []string{"localhost:9092"}
 
 	//Kafka продюсер
-	p, err := kafka.NewProducer(brokers)
+	p, err := kafka.NewProducer(brokers, logger)
 	if err != nil {
-		log.Fatalf("Failed to create producer: %v", err)
+		logger.Error("Failed to create producer", "error", err)
 	}
 	defer p.Producer.Close()
 
 	//Kafka консьюмер
-	c, err := kafka.NewConsumer(brokers, subscriptionRepo, emailNotifier)
+	c, err := kafka.NewConsumer(brokers, subscriptionRepo, emailNotifier, logger)
 	if err != nil {
-		log.Fatalf("Failed to create consumer: %v", err)
+		logger.Error("Failed to create consumer", "error", err)
 	}
 	defer c.Consumer.Close()
 
@@ -64,20 +75,14 @@ func main() {
 
 	router := mux.NewRouter()
 
-	h := handler.New(tokenManager, userRepo, houseRepo, flatRepo, subscriptionRepo, p, c)
+	h := handler.New(tokenManager, userRepo, houseRepo, flatRepo, subscriptionRepo, p, c, logger)
 
 	router.HandleFunc("/register", h.Register).Methods("POST")
 	router.HandleFunc("/login", h.Login).Methods("POST")
-
-	//проверка на модератора
 	router.HandleFunc("/house/{id}", middleware.Auth(h.CreateHouse, tokenManager, true)).Methods("POST")
 	router.HandleFunc("/house/{id}", middleware.Auth(h.GetFlatsByHouseID, tokenManager, true)).Methods("GET")
 	router.HandleFunc("/flat/update", middleware.Auth(h.GetModerationFlats, tokenManager, true)).Methods("GET")
-
-	//возврат юзера через контекст
 	router.HandleFunc("/house/{id}", middleware.Auth(h.GetFlatsByHouseID, tokenManager, false)).Methods("GET")
-
-	//ничего не нужно
 	router.HandleFunc("/house/{id}/subscribe", middleware.Auth(h.CreateSubscription, tokenManager, false)).Methods("POST")
 	router.HandleFunc("/flat/create", middleware.Auth(h.CreateFlat, tokenManager, false)).Methods("POST")
 
@@ -87,4 +92,25 @@ func main() {
 	if err = http.ListenAndServe(addr, router); err != nil {
 		log.Fatalln("Error launch web server:", err)
 	}
+}
+
+func setupLogger(env string) *slog.Logger {
+	var logger *slog.Logger
+
+	switch env {
+	case envDev:
+		logger = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
+	case envProd:
+		logger = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
+	default:
+		logger = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
+	}
+
+	return logger
 }
