@@ -10,7 +10,7 @@ type Consumer struct {
 	Consumer         sarama.Consumer
 	subscriptionRepo SubscriptionRepository
 	notifier         NotifierSender
-	logger           *slog.Logger
+	logger           Logger
 }
 
 func NewConsumer(brokers []string, subscriptionRepo SubscriptionRepository, notifier NotifierSender, logger *slog.Logger) (*Consumer, error) {

@@ -9,8 +9,15 @@ import (
 	"os"
 )
 
+type Logger interface {
+	Info(msg string, fields ...interface{})
+	Debug(msg string, fields ...interface{})
+	Warn(msg string, fields ...interface{})
+	Error(msg string, fields ...interface{})
+}
+
 type Notifier struct {
-	logger *slog.Logger
+	logger Logger
 }
 
 // NewNotifier создаёт новый Notifier с указанным логгером.

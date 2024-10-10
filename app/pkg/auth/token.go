@@ -10,7 +10,7 @@ import (
 
 type TokenService struct {
 	JWTSecretKey string
-	logger       *slog.Logger
+	logger       Logger
 }
 
 func NewTokenService(secretKey string, logger *slog.Logger) *TokenService {

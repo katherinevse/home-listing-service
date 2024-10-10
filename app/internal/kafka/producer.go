@@ -8,7 +8,7 @@ import (
 
 type Producer struct {
 	Producer sarama.SyncProducer
-	logger   *slog.Logger
+	logger   Logger
 }
 
 func NewProducer(brokers []string, logger *slog.Logger) (*Producer, error) {
