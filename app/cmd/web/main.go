@@ -27,7 +27,7 @@ const (
 	envProd = "prod"
 )
 
-//TODO добавить логгер, middleware исправить контексты, кафку, обработать ошибки, исправить все по контракту
+//TODO исправить контексты, кафку, обработать ошибки, исправить все по контракту
 
 var cfg *config.Config
 var logger *slog.Logger
@@ -53,17 +53,16 @@ func main() {
 	flatRepo := flat.NewRepo(db)
 	subscriptionRepo := subscriptions.NewRepo(db)
 
-	brokers := []string{"localhost:9092"}
+	//brokers := []string{"localhost:9092"}
 
-	//Kafka продюсер
-	p, err := kafka.NewProducer(brokers, logger)
+	p, err := kafka.NewProducer(cfg.KafkaConfig.Brokers, logger)
 	if err != nil {
 		logger.Error("Failed to create producer", "error", err)
+		return
 	}
 	defer p.Producer.Close()
 
-	//Kafka консьюмер
-	c, err := kafka.NewConsumer(brokers, subscriptionRepo, emailNotifier, logger)
+	c, err := kafka.NewConsumer(cfg.KafkaConfig.Brokers, subscriptionRepo, emailNotifier, logger)
 	if err != nil {
 		logger.Error("Failed to create consumer", "error", err)
 	}

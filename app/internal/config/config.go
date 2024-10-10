@@ -5,6 +5,7 @@ type Config struct {
 	PostgresCfg  PostgresConfig `yaml:"db"`
 	JWTConfig    JWTConfig      `yaml:"jwt"`
 	LoggerConfig LoggerConfig   `yaml:"logger"`
+	KafkaConfig  KafkaConfig    `yaml:"kafka"`
 }
 
 type PostgresConfig struct {
@@ -30,11 +31,16 @@ type LoggerConfig struct {
 	Level string `yaml:"level"`
 }
 
+type KafkaConfig struct {
+	Brokers []string `yaml:"brokers"`
+}
+
 func NewConfig() *Config {
 	return &Config{
 		PostgresCfg:  PostgresConfig{},
 		AppCfg:       AppConfig{},
 		JWTConfig:    JWTConfig{},
 		LoggerConfig: LoggerConfig{},
+		KafkaConfig:  KafkaConfig{},
 	}
 }

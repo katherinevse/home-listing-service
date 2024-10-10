@@ -17,3 +17,6 @@ jwt:
 logger:
   level: "debug" # "info", "error"
 
+kafka:
+  brokers:
+    - "localhost:9092"
