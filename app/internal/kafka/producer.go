@@ -3,7 +3,6 @@ package kafka
 import (
 	"encoding/json"
 	"github.com/IBM/sarama"
-	"log/slog"
 )
 
 type Producer struct {
@@ -11,7 +10,7 @@ type Producer struct {
 	logger   Logger
 }
 
-func NewProducer(brokers []string, logger *slog.Logger) (*Producer, error) {
+func NewProducer(brokers []string, logger Logger) (*Producer, error) {
 	producer, err := sarama.NewSyncProducer(brokers, nil)
 	if err != nil {
 		return nil, err

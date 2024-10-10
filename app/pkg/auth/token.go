@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"log/slog"
 	"time"
 )
 
@@ -13,7 +12,7 @@ type TokenService struct {
 	logger       Logger
 }
 
-func NewTokenService(secretKey string, logger *slog.Logger) *TokenService {
+func NewTokenService(secretKey string, logger Logger) *TokenService {
 	return &TokenService{
 		JWTSecretKey: secretKey,
 		logger:       logger,

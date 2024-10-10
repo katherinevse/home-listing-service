@@ -3,7 +3,6 @@ package kafka
 import (
 	"encoding/json"
 	"github.com/IBM/sarama"
-	"log/slog"
 )
 
 type Consumer struct {
@@ -13,7 +12,7 @@ type Consumer struct {
 	logger           Logger
 }
 
-func NewConsumer(brokers []string, subscriptionRepo SubscriptionRepository, notifier NotifierSender, logger *slog.Logger) (*Consumer, error) {
+func NewConsumer(brokers []string, subscriptionRepo SubscriptionRepository, notifier NotifierSender, logger Logger) (*Consumer, error) {
 	consumer, err := sarama.NewConsumer(brokers, nil)
 	if err != nil {
 		return nil, err

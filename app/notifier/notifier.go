@@ -4,7 +4,6 @@ import (
 	"app/internal/kafka"
 	"app/internal/repository/model"
 	"fmt"
-	"log/slog"
 	"net/smtp"
 	"os"
 )
@@ -21,7 +20,7 @@ type Notifier struct {
 }
 
 // NewNotifier создаёт новый Notifier с указанным логгером.
-func NewNotifier(logger *slog.Logger) *Notifier {
+func NewNotifier(logger Logger) *Notifier {
 	return &Notifier{logger: logger}
 }
 
