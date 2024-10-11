@@ -19,7 +19,6 @@ type Notifier struct {
 	logger Logger
 }
 
-// NewNotifier создаёт новый Notifier с указанным логгером.
 func NewNotifier(logger Logger) *Notifier {
 	return &Notifier{logger: logger}
 }
